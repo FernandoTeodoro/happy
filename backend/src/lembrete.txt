@@ -1,0 +1,13 @@
+Lembretes:
+
+Rota = conjunto
+Recurso = usuario
+Metodos HTTP = GET, POST, PUT, DELETE
+    //GET = Buscar uma informação
+    //POST = Criar uma informação
+    //PUT = Editar uma informação
+    //DELETE = Deletar uma informação
+Parametros
+    //Query: http://localhost:3333/users?search=diego
+    //Route: http://localhost:3333/users/1 (identificar um recurso)
+    //Body:  http://localhost:3333/users
