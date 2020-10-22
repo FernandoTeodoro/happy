@@ -1,9 +1,10 @@
 import React from 'react'
 import '../styles/global.css'
 import '../styles/landing.css'
-import logoImg from '../images/logo.svg'
 import { FiArrowRight } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
+
+import logoImg from '../images/logo.svg'
 
 function Landing () {
     return( 

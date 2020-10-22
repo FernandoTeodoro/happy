@@ -10,6 +10,8 @@
 
 #page-landing .content-wrapper{
     position: relative;
+    padding-top: 50px;
+    padding-bottom: 50px;
 
     width: 100%;
     max-width: 1100px;
@@ -46,7 +48,7 @@
 .content-wrapper .location {
     position: absolute;
     right: 0;
-    top: 0;
+    top: 50px;
 
     font-size: 24px;
     line-height: 34px;
@@ -64,7 +66,7 @@
 .content-wrapper .enter-app {
     position: absolute;
     right: 0;
-    bottom: 0;
+    bottom: 50px;
 
     width: 80px;
     height: 80px;
