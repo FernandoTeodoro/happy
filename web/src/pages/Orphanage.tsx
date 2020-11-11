@@ -1,12 +1,13 @@
-import React from 'react'
-import { FaWhatsapp } from 'react-icons/fa'
+import React, { useEffect, useState } from 'react'
 import {FiClock, FiInfo } from 'react-icons/fi'
 import { Map, Marker, TileLayer} from "react-leaflet"
 import L from 'leaflet'
+import { useParams } from 'react-router-dom'
 
 import mapMarkerImg from '../images/map-marker.svg'
 import '../styles/orphanages.css'
 import Sidebar from '../components/Sidebar'
+import api from '../services/api'
 
 const happyMapIcon = L.icon({
   iconUrl: mapMarkerImg,
@@ -16,7 +17,39 @@ const happyMapIcon = L.icon({
   popupAnchor: [0, -60]
 })
 
+interface Orphanage {
+  name: string;
+  latitude: number;
+  longitude: number;
+  about: string;
+  instructions: string;
+  opening_hours: string;
+  open_on_weekend: string;
+  images: Array<{
+    id: number;
+    url: string; 
+  }>
+}
+
+interface OrphanageParams{
+  id: string;
+}
+
 export default function Orphanage() {
+
+  const params = useParams<OrphanageParams>();
+  const [orphanage, setOrphanage] = useState<Orphanage>();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    api.get(`orphanages/${params.id}`).then(response => {
+      setOrphanage(response.data);
+    });
+  }, [params.id]);
+
+  if (!orphanage){
+    return <p>Carregando ... </p>;
+  }
   
   return(
     <div id="page-orphanage">
@@ -25,37 +58,33 @@ export default function Orphanage() {
 
       <main>
         <div className="orphanage-details">
-          <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-
-          <div className="images">
-            <button className="active" type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            <button type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            <button type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            <button type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            <button type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            <button type="button">
-              <img src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg" alt="Lar das Meninas" />
-            </button>
-            </div>
+          <img src={orphanage.images[activeImageIndex].url} alt={orphanage.name}/>
+          
+          <div className="images">  
+            {orphanage.images.map((image, index) => {
+              return (
+                <button 
+                key={image.id} 
+                className={activeImageIndex === index ? 'active' : ''}
+                type="button"
+                onClick={() => {
+                  setActiveImageIndex(index)}
+                } 
+                >
+                  <img src={image.url} alt={orphanage.name} />
+                </button>
+              )
+            })}
+          </div>
 
             <div className="orphanage-details-content">
-              <h1>Lar das Meninas</h1>
-              <p>Algum texto aleatório só pra dizer que tem algo aqui e que depois vai ser substituido pelo que tem dentro do campo about do objeto orphanage</p>
+              <h1>{orphanage.name}</h1>
+              <p>{orphanage.about}</p>
 
               <div className="map-container">
                 <Map
-                  center={[-20.2873611,-40.3080731]}
-                  zoom={16}
+                  center={[orphanage.latitude, orphanage.longitude]}
+                  zoom={13}
                   style={{ width: '100%', height: 280}}
                   dragging={false}
                   touchZoom={false}
@@ -66,36 +95,40 @@ export default function Orphanage() {
                   <TileLayer 
                     url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`}
                   />
-                  <Marker interactive={false} icon={happyMapIcon} position={[-20.2873611,-40.3080731]}/>
+                  <Marker interactive={false} icon={happyMapIcon} position={[orphanage.latitude, orphanage.longitude]}/>
                 </Map>
 
                 <footer>
-                  <a href="">Ver as rotas no Google Maps</a>
+                  <a target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps/dir/?api=1&destination=${orphanage.latitude},${orphanage.longitude}`}>Ver as rotas no Google Maps</a>
                 </footer>
               </div>
 
               <hr />
 
               <h2>Instruções para Visita</h2>
-              <p>Venha como se sentir à vontade e traga muito amor pra dar.</p>
+              <p>{orphanage.instructions}</p>
 
               <div className="open-details">
                 <div className="hour">
                   <FiClock size={23} color="#15B6D6" />
                   Segunda à Sexta <br/>
-                  8h às 18h
+                  {orphanage.opening_hours}
                 </div>
-                <div className="open-on-weekends">
-                  <FiInfo size={23} color="#39CC83" />
-                  Atendemos <br/>
-                  fim de semana
-                </div>
+                {orphanage.open_on_weekend ? (
+                      <div className="open-on-weekends">
+                      <FiInfo size={23} color="#39CC83" />
+                      Atendemos <br/>
+                      fim de semana
+                      </div>
+                    ) : (
+                      <div className="open-on-weekends dont-open">
+                      <FiInfo size={23} color="#FF669D" />
+                      Não atendemos <br/>
+                      fim de semana
+                      </div>
+                    ) 
+                  }
               </div>
-
-              <button type="button" className="contact-button">
-                <FaWhatsapp size={20} color="#FFFFFF" />
-                Entrar em Contato
-              </button>  
             </div>
           </div>
       </main>
